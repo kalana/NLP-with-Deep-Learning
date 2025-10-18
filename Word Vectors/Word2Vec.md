@@ -1,192 +1,158 @@
-# Lecture Note: Understanding Word2Vec and Its Mathematical Foundations
+# **Lecture Note: Word2Vec, Likelihood, and the Objective Function**
 
-## 1. Introduction to Word2Vec
+## **1. Introduction to Word2Vec**
 
-**Word2Vec** is a powerful neural network model used to represent words as numerical vectors in a continuous vector space.  
-The key idea is that words with similar meanings will have similar vector representations — meaning their vectors will be close together in the embedding space.
+**Word2Vec** is a family of models used to learn **vector representations of words** — known as *word embeddings*.  
+These embeddings capture semantic relationships between words in a continuous vector space, such that words appearing in similar contexts have similar representations.
 
-For example:
-
-- “king” and “queen” will have similar vector representations.  
-- The model can even capture relationships like:
-
-vector("king") - vector("man") + vector("woman") ≈ vector("queen")
-
-
-This shows how Word2Vec captures **semantic and syntactic relationships** between words.
-
----
-
-## 2. Motivation: Why Word Embeddings?
-
-Before Word2Vec, traditional NLP models used **one-hot encoding**, which represented words as large, sparse vectors of 0s and 1s.  
-However, this had two main issues:
-
-1. **No notion of similarity:** Every word vector was orthogonal — there was no relationship between “cat” and “dog.”  
-2. **High dimensionality:** The size of the vector equals the vocabulary size, which can be huge.
-
-Word2Vec solved this by learning **dense, low-dimensional, continuous-valued representations** where similar words share similar vectors.
-
----
-
-## 3. Two Architectures: CBOW and Skip-Gram
-
-Word2Vec comes in two main forms:
-
-### a. Continuous Bag of Words (CBOW)
-- Predicts a **target word** given its **context** (surrounding words).  
-- Example: Given “the cat ___ on the mat”, predict the missing word “sat”.
-- Input: Context words  
-- Output: Target word  
-
-### b. Skip-Gram
-- The inverse of CBOW. It predicts **context words** given a **target word**.  
-- Example: Given “sat”, predict context words “the”, “cat”, “on”, “the”, “mat”.
-- Input: Target word  
-- Output: Context words  
-
-The Skip-Gram model tends to perform better for larger datasets and captures rare word representations more effectively.
-
----
-
-## 4. Mathematical Representation
-
-Let’s formalize the Skip-Gram model (as it’s more common in explanations).
-
-For a given word sequence \( w_1, w_2, ..., w_T \):
-
-The **objective** is to maximize the probability of predicting the context words given the target word:
+For example, in a well-trained model, vectors for words like *king* and *queen* or *Paris* and *France* occupy nearby regions in the embedding space, allowing arithmetic-like operations such as:
 
 \[
-\max_{\theta} \prod_{t=1}^{T} \prod_{-c \le j \le c, j \ne 0} P(w_{t+j} | w_t; \theta)
+\text{vector("king")} - \text{vector("man")} + \text{vector("woman")} \approx \text{vector("queen")}
 \]
 
-where:
-- \( c \) = context window size  
-- \( w_t \) = target word  
-- \( w_{t+j} \) = context word  
-- \( \theta \) = model parameters (weights of neural network)
+The goal of Word2Vec is to learn these word vectors from large text corpora in such a way that words occurring in similar contexts have similar embeddings.
 
-To simplify computation, we take the logarithm of the objective (since log converts product to sum):
+---
+
+## **2. The Probabilistic Framing**
+
+To achieve this, Word2Vec defines a **probabilistic model** of language.  
+For each *center word* \( c \), the model aims to predict its *context words* \( o \) — i.e., the words that appear nearby in a sentence.
+
+Mathematically, this is expressed as:
 
 \[
-\mathcal{L} = \sum_{t=1}^{T} \sum_{-c \le j \le c, j \ne 0} \log P(w_{t+j} | w_t)
+P(o \mid c)
 \]
+
+which means the probability of observing the word \( o \) given the center word \( c \).  
+The model’s task is to **maximize this conditional probability** across all observed word pairs in the training corpus.
 
 ---
 
-## 5. Objective Function (Loss Function)
+## **3. Model Representation**
 
-This **objective function** defines *what the model learns*.  
-It measures how well the model predicts context words from a target word.  
-The better the model predicts, the higher the log-likelihood (and the lower the loss).
+Each word in the vocabulary is represented by two vectors:
 
-The probability \( P(w_O | w_I) \) is modeled using a **softmax function**:
+- \( v_c \): the **vector representation** when the word is a *center word*  
+- \( u_o \): the **vector representation** when the word is a *context word*
+
+Using these, Word2Vec defines the conditional probability as a **softmax function**:
 
 \[
-P(w_O | w_I) = \frac{\exp(v_{w_O}^\top v_{w_I})}{\sum_{w=1}^{|V|} \exp(v_w^\top v_{w_I})}
+P(o \mid c) = \frac{\exp(u_o^\top v_c)}{\sum_{w=1}^{V} \exp(u_w^\top v_c)}
 \]
 
-where:
-- \( v_{w_I} \) = input vector of the target word  
-- \( v_{w_O} \) = output vector of the context word  
-- \( |V| \) = vocabulary size  
+where \( V \) is the vocabulary size.  
 
-This function ensures that all probabilities sum to 1 across the vocabulary.
-
-However, computing the denominator (sum over all words) is **very expensive**, especially for large vocabularies.
+The numerator measures the similarity between the context and center word, and the denominator normalizes this across all possible words in the vocabulary so that the probabilities sum to 1.
 
 ---
 
-## 6. Optimization Techniques: Negative Sampling and Hierarchical Softmax
+## **4. The Likelihood Function**
 
-To overcome computational inefficiency, Word2Vec uses two techniques:
-
-### a. Negative Sampling
-- Instead of updating all weights for every prediction, the model updates only a few:
-- The correct (positive) word.
-- A few randomly chosen incorrect (negative) words.
-- This drastically reduces training time while maintaining performance.
-
-### b. Hierarchical Softmax
-- Uses a **binary tree structure** where each leaf node represents a word.
-- Instead of computing probabilities for all words, the model walks a path through the tree, updating only the nodes on that path.
-
-These methods make training feasible for large vocabularies.
-
----
-
-## 7. Model Training Process
-
-### Step 1: Input Representation
-- Each input word is represented as a one-hot vector.  
-- For example, for vocabulary size 10,000, the word “cat” might be `[0, 0, 0, 1, 0, ..., 0]`.
-
-### Step 2: Hidden Layer Transformation
-- Multiply the one-hot vector by a weight matrix \( W \), producing the **embedding vector**.
+Given a large corpus containing many word pairs \((c, o)\), the **likelihood function** represents the probability of the entire dataset under the current model parameters:
 
 \[
-h = W^T x
+L = \prod_{(c,o) \in D} P(o \mid c)
 \]
 
-Here:
-- \( x \) = one-hot vector of input word  
-- \( W \) = weight matrix (each column is a word embedding)  
-- \( h \) = hidden layer output (the word’s vector representation)
+This likelihood indicates how well the model with its current parameters explains the observed data.  
+However, multiplying many small probabilities can lead to **numerical instability** and make optimization difficult.
 
-### Step 3: Output Layer
-- Multiply \( h \) by another weight matrix \( W' \) and apply softmax to get probabilities of context words.
+---
+
+## **5. The Log-Likelihood Function**
+
+To simplify computation, we take the **logarithm** of the likelihood function.  
+The log operation converts products into sums:
 
 \[
-P(w_O | w_I) = \text{softmax}(W' h)
+\log L = \sum_{(c,o) \in D} \log P(o \mid c)
 \]
 
-### Step 4: Backpropagation and Weight Update
-- Compute loss from the objective function (log-likelihood or cross-entropy).  
-- Update weights \( W \) and \( W' \) using **stochastic gradient descent (SGD)** or similar optimizers.
-
-Through many iterations, words that appear in similar contexts move closer in the embedding space.
+Maximizing the log-likelihood is equivalent to maximizing the likelihood itself because the logarithm is a monotonically increasing function.  
+It also improves numerical stability and simplifies differentiation, which is crucial for gradient-based optimization.
 
 ---
 
-## 8. Prediction (Using Trained Model)
+## **6. The Objective Function**
 
-Once trained:
-- Each word has an embedding vector (a row in matrix \( W \)).
-- These embeddings can be used to measure **similarity** using cosine similarity:
+The **objective function** is a general term for the mathematical expression we aim to optimize — either maximize or minimize — to make our model perform better.  
+It quantifies *how well* our model represents the data.
+
+In the case of **Maximum Likelihood Estimation (MLE)** used in Word2Vec, the **objective function** is the **log-likelihood**:
 
 \[
-\text{similarity}(A, B) = \frac{v_A \cdot v_B}{\|v_A\| \|v_B\|}
+J(\theta) = \sum_{(c,o) \in D} \log P(o \mid c)
 \]
 
-- Similar words (like *car* and *automobile*) will have high similarity.
-- These vectors are often visualized in 2D using **t-SNE** or **PCA** for interpretability.
+The parameters \( \theta \) (which include all word vectors \( u \) and \( v \)) are updated to **maximize** this objective.  
+In practice, we often minimize the **negative log-likelihood**, which is mathematically equivalent:
+
+\[
+\text{Minimize: } -J(\theta) = -\sum_{(c,o) \in D} \log P(o \mid c)
+\]
+
+This objective function guides learning — by adjusting parameters to maximize log-likelihood, the model assigns higher probabilities to word pairs that truly occur in the corpus.
 
 ---
 
-## 9. Summary of Key Concepts
+## **7. Model Training Process**
 
-| Concept | Description |
-|----------|--------------|
-| **Word2Vec** | Neural network model to learn dense word representations |
-| **CBOW** | Predicts a target word from context |
-| **Skip-Gram** | Predicts context words from a target |
-| **Objective Function** | Log-likelihood of context words given target |
-| **Softmax Function** | Converts scores to probabilities |
-| **Negative Sampling** | Efficient training with sampled negative words |
-| **Embedding Matrix** | Learned dense vectors for all words |
+Training involves iteratively optimizing the objective function using **stochastic gradient descent (SGD)** or similar algorithms.
+
+**Steps:**
+
+1. **Initialize parameters** — assign small random values to all word vectors \( u \) and \( v \).  
+2. **Compute the loss** — for each word pair \((c, o)\), calculate the negative log-probability \(-\log P(o \mid c)\).  
+3. **Compute gradients** — determine how much each parameter contributes to the loss.  
+4. **Update parameters** — adjust parameters in the direction that reduces loss:
+
+   \[
+   \theta \leftarrow \theta - \eta \nabla_\theta (-J(\theta))
+   \]
+
+   where \( \eta \) is the learning rate.
+
+This process repeats over many epochs until convergence — when parameter updates no longer improve the objective significantly.
+
+---
+
+## **8. Computational Challenge and Approximations**
+
+The denominator in the softmax function involves a sum over the entire vocabulary \( V \), which can be extremely large (millions of words).  
+Computing this for every update is computationally expensive.
+
+To address this, Word2Vec uses approximation techniques such as:
+
+- **Hierarchical Softmax** — organizes words in a binary tree to reduce computation.  
+- **Negative Sampling** — updates only a few randomly chosen “negative” samples at each training step.
+
+These methods drastically reduce training time while maintaining good embedding quality.
 
 ---
 
-## 10. Intuition Behind Learning
+## **9. Making Predictions**
 
-During training, the model adjusts embeddings so that:
-- Words appearing in similar contexts (e.g., “king” and “queen”) have **similar vectors**.
-- Linear relationships between words are preserved in vector space:
+After training, each word has a learned vector representation.  
+These embeddings can be used in several ways:
 
-vector("Paris") - vector("France") ≈ vector("Berlin") - vector("Germany")
+- **Semantic similarity:** words with similar meanings have similar vectors (cosine similarity).  
+- **Analogical reasoning:** e.g., *king – man + woman ≈ queen*.  
+- **Feature representation:** word embeddings serve as inputs to downstream NLP models (e.g., sentiment analysis, translation).
 
-
-Thus, Word2Vec captures **semantic meaning** through simple neural training and a clever objective function.
+The trained model doesn’t predict words directly — instead, it provides a **semantic embedding space** where vector proximity encodes linguistic relationships.
 
 ---
+
+## **10. Summary**
+
+- **Likelihood function:** measures how probable the observed data is, given model parameters.  
+- **Log-likelihood function:** transforms products into sums, improving numerical stability and optimization.  
+- **Objective function:** defines what the model optimizes (here, the log-likelihood).  
+- **Training:** iterative parameter updates using gradient-based methods to maximize log-likelihood (or minimize negative log-likelihood).  
+- **Prediction:** learned embeddings capture semantic meaning and are used in various downstream NLP tasks.
+
+In essence, the entire Word2Vec training process revolves around the **objective function**, which translates linguistic patterns into a mathematical form that guides the model to learn meaningful word representations.
