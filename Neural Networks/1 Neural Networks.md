@@ -1,8 +1,14 @@
-# 1 Neural Networks - Review
+# 1 Introduction to Neural Networks
+
+> *Neural networks are not black boxes - they are stacks of simple mathematical functions that learn through gradient descent. Understanding the underlying calculus reveals their transparency: they are smooth landscapes of parameters where learning is the art of navigating downhill, guided by gradients and sculpted by non-linearities.*
+>
+>*The mathematics of learning, once seen as a curiosity of early neural research, now defines the architecture of modern intelligence systems - from image classifiers to conversational agents.* 
+
+
 
 In previous sections we had looked at small “baby” neural networks and noted that each of those orange circles — the neurons — can be thought of as little *logistic regression* units.  
 
-![alt text](nn-1.png)
+![Neural Network](/img/nn-1.png)
 
 In traditional statistics or introductory machine learning courses, you typically deal with a *single* logistic regression: you manually define the input features, compute a weighted sum, and produce one decision output. Neural networks, however, stack many such logistic-like units together — creating cascades of transformations.  
 
