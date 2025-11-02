@@ -1,4 +1,4 @@
-# 1 Introduction to Neural Networks
+# Introduction to Neural Networks
 
 > *Neural networks are not black boxes - they are stacks of simple mathematical functions that learn through gradient descent. Understanding the underlying calculus reveals their transparency: they are smooth landscapes of parameters where learning is the art of navigating downhill, guided by gradients and sculpted by non-linearities.*
 >
@@ -45,7 +45,7 @@ As an example, recall the small network we looked at earlier that predicted whet
 
 ---
 
-## Activation Functions — Why We Need Them
+## Activation Functions (*Why we need them?*)
 
 Historically, neural networks began with a *threshold* activation — a neuron would “fire” (output 1) if its input exceeded a threshold $\theta$, and otherwise output 0. This was inspired by biological neurons and dates back to the 1940s.  
 
@@ -55,7 +55,7 @@ To enable learning, we need functions that have *non-zero gradients*. Hence, smo
 
 ---
 
-## The Sigmoid and Tanh
+## Sigmoid and Tanh
 
 The first widely used activation was the **sigmoid** (or logistic) function:
 
@@ -88,7 +88,7 @@ Despite these benefits, both sigmoid and tanh require computing exponentials, wh
 
 ---
 
-## The Rise of ReLU and Its Variants
+## ReLU and its Variants
 
 To find simpler, faster, and more effective alternatives, researchers introduced *piecewise linear* activation functions.
 
@@ -104,7 +104,7 @@ ReLU outputs 0 for negative inputs and grows linearly for positive inputs. This 
 - It’s computationally cheap  
 - It allows fast and effective gradient propagation during backpropagation  
 
-The downside is that neurons can “die” — once they enter the negative region, their gradient becomes zero, and they may stop updating. Still, empirically, networks with ReLU activations train faster and achieve better performance in many cases.  
+The downside is that neurons can “die” - once they enter the negative region, their gradient becomes zero, and they may stop updating. Still, empirically, networks with ReLU activations train faster and achieve better performance in many cases.  
 
 To address the “dying ReLU” issue, several variants were proposed:
 
@@ -121,14 +121,14 @@ These newer functions behave roughly like ReLU for large $x$, but are smoother n
 
 ---
 
-## Why Non-Linearity Is Essential
+## Why Non-Linearity is Essential?
 
 So why do we even need non-linearities at all?  
 The answer is *representational power*.
 
-A matrix multiplication (plus bias) is an **affine transformation**, which is fundamentally linear. Composing multiple linear layers still gives you a linear function — you can collapse them into a single matrix. Thus, without non-linearities, stacking layers does not increase the expressive capacity of your model.
+A matrix multiplication (plus bias) is an **affine transformation**, which is fundamentally linear. Composing multiple linear layers still gives you a linear function - you can collapse them into a single matrix. Thus, without non-linearities, stacking layers does not increase the expressive capacity of your model.
 
-Non-linear activation functions break this constraint. They let neural networks represent complex, non-linear mappings — enabling them to approximate *any* continuous function, as guaranteed by the **Universal Approximation Theorem**.
+Non-linear activation functions break this constraint. They let neural networks represent complex, non-linear mappings - enabling them to approximate *any* continuous function, as guaranteed by the **Universal Approximation Theorem**.
 
 Even though linear networks are theoretically interesting to study (for understanding learning dynamics), in practice, non-linear activations are indispensable for learning expressive models.
 
@@ -136,7 +136,7 @@ Even though linear networks are theoretically interesting to study (for understa
 
 ## Gradient-Based Learning and Backpropagation
 
-With non-linearities in place, the next challenge is learning the parameters — the weights and biases. Neural networks learn by **gradient descent**, where we compute the derivative of the loss function with respect to each parameter and update in the direction that reduces the loss.
+With non-linearities in place, the next challenge is learning the parameters - the weights and biases. Neural networks learn by **gradient descent**, where we compute the derivative of the loss function with respect to each parameter and update in the direction that reduces the loss.
 
 Mathematically, a simple gradient descent update rule is:
 
@@ -153,11 +153,11 @@ Here:
 
 The symbol $\nabla$ (nabla) denotes the *gradient operator*, which gives the slope of the function in parameter space.  
 
-In practice, we use **stochastic gradient descent (SGD)** — estimating the gradient on small random batches of data rather than the whole dataset at once.
+In practice, we use **stochastic gradient descent (SGD)** - estimating the gradient on small random batches of data rather than the whole dataset at once.
 
 The crucial computational step underlying all this is **backpropagation**. Backpropagation is simply the *systematic application of the chain rule* from calculus to efficiently compute gradients across many layers of a network. It automates what, in theory, you could derive by hand.
 
-To perform this correctly, we rely on **matrix calculus** — derivatives of vector- and matrix-valued functions. The goal in this lecture (and in the upcoming assignment) is to understand both the manual math and the automated process behind backpropagation.
+To perform this correctly, we rely on **matrix calculus** (derivatives of vector) and matrix-valued functions. The goal in this lecture (and in the upcoming assignment) is to understand both the manual math and the automated process behind backpropagation.
 
 ---
 
@@ -165,8 +165,8 @@ To perform this correctly, we rely on **matrix calculus** — derivatives of vec
 
 Neural networks can be viewed as cascades of logistic regression units that learn hierarchical feature representations through gradient-based optimization. Their power comes from three key ideas:
 
-1. **Layered composition of linear and non-linear functions** — allowing rich, compositional representations.  
-2. **Non-linear activation functions** — introducing the ability to approximate complex mappings.  
-3. **Gradient-based learning** — enabling optimization of parameters through backpropagation.
+1. **Layered composition of linear and non-linear functions** - allowing rich, compositional representations.  
+2. **Non-linear activation functions** - introducing the ability to approximate complex mappings.  
+3. **Gradient-based learning** - enabling optimization of parameters through backpropagation.
 
-In the next part of the lecture, we’ll move from these conceptual foundations to the mechanics of computing gradients — both by hand and computationally — which is the mathematical backbone of how neural networks learn.
+In the next part of the lecture, we’ll move from these conceptual foundations to the mechanics of computing gradients (both by hand and computationally) which is the mathematical backbone of how neural networks learn.
